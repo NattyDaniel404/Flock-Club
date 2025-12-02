@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flock Club</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========================= -->
+  <!--   CHARACTER CREATION      -->
+  <!-- ========================= -->
+  <section id="creatorSection" class="creator-screen" style="min-height:40vh; padding:24px;">
+    <div class="section" style="max-width:900px; margin:0 auto;">
+      <div class="h">Welcome to Flock Club</div>
+      <p class="muted">Create your character, then scroll down to join the chat room.</p>
+
+      <div class="row" style="align-items:flex-start; justify-content:space-between; flex-wrap:wrap;">
+
+        <!-- Customizer controls -->
+        <div style="flex:1 1 280px; max-width:600px;">
+          <div class="row">
+            <label class="muted" for="creatorName">Name</label>
+            <input id="creatorName"
+                   maxlength="20"
+                   placeholder="Type your name…"
+                   style="flex:1; padding:8px 10px; border-radius:10px; border:1px solid #1b2340; background:#0c1225; color:var(--text);" />
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:8px;">
+            <div>
+              <div class="h">Color</div>
+              <div class="row" id="colorRow"></div>
+
+              <div class="h">Eyes</div>
+              <div class="row" id="eyesRow"></div>
+
+              <div class="h">Beak</div>
+              <div class="row" id="beakRow"></div>
+            </div>
+            <div>
+              <div class="h">Torso</div>
+              <div class="row" id="torsoRow"></div>
+
+              <div class="h">Hair</div>
+              <div class="row" id="hairRow"></div>
+
+              <div class="h">Pants Style</div>
+              <div class="row" id="pantsRow"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= -->
+  <!--        CHAT ROOM          -->
+  <!-- ========================= -->
+  <section id="chatSection">
+    <div class="app">
+      <!-- LEFT: Sidebar -->
+      <aside class="sidebar">
+        <!-- Profile panel -->
+        <div class="section" id="profileBox">
+          <div class="h">Profile</div>
+          <div class="muted" id="youName"></div>
+          <div class="row muted">
+            Wins:<span id="youWins">0</span> · Games:<span id="youGames">0</span>
+          </div>
+
+          <!-- LIVE AVATAR PREVIEW HERE -->
+          <div id="creatorPreview" class="creator-preview" style="margin-top:12px; text-align:center;"></div>
+        </div>
+        
+        <!-- Character creator toggle -->
+        <div class="section">
+          <div class="h">Character</div>
+          <button class="btn" id="toggleCreatorBtn">Hide Character Creator</button>
+        </div>
+
+        <!-- Room feed (chat log) -->
+        <div class="section">
+          <div class="h">Room Feed</div>
+          <div class="feed" id="feed"></div>
+        </div>
+      </aside>
+
+      <!-- RIGHT: Room + chat dock -->
+      <main class="room-wrap">
+        <!-- The room where avatars go -->
+        <div class="room" id="room">
+          <div class="floor"></div>
+        </div>
+
+        <!-- Chat dock -->
+        <div class="dock">
+          <form class="chat" id="chatForm">
+            <input id="chatInput" placeholder="Type message…  (/w @name to PM)" autocomplete="off" />
+            <button class="btn send" type="submit">Send</button>
+          </form>
+          <div class="row" style="justify-content:flex-end">
+            <button class="btn" id="centerBtn">Center Me</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- Profile modal -->
+  <dialog id="profileModal">
+    <div class="modal">
+      <h3 id="pTitle">Profile</h3>
+      <div class="muted" id="pBody">Loading…</div>
+      <div class="row" style="justify-content:flex-end; margin-top:12px">
+        <button class="btn" onclick="profileModal.close()">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Tic-Tac-Toe modal -->
+  <dialog id="tttModal">
+    <div class="modal">
+      <h3>Tic-Tac-Toe</h3>
+      <div class="muted" id="tttStatus">Waiting…</div>
+      <div class="ttt" id="tttBoard"></div>
+      <div class="row" style="justify-content:flex-end; margin-top:12px">
+        <button class="btn" onclick="endTtt()">Leave</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
