@@ -37,10 +37,13 @@ const COLOR_BASES = {
 };
 
 const COLORS = Object.keys(COLOR_BASES);
-const EYES   = ['default'];
-const BEAKS  = ['default'];
-const TORSOS = ['default'];
-const HAIRS  = ['default'];
+
+// These now correspond to actual numbered files:
+// Eyes_1.png .. Eyes_4.png, Beak_1.png .. Beak_3.png, Hair_1.png .. Hair_4.png
+const EYES   = ['1', '2', '3', '4'];
+const BEAKS  = ['1', '2', '3'];
+const TORSOS = ['default']; // still not using torso variants yet
+const HAIRS  = ['1', '2', '3', '4'];
 const PANTS  = ['Shorts', 'Skirt'];
 
 const you = {
@@ -50,10 +53,10 @@ const you = {
   y: Math.random() * 260 + 260,
   look: {
     color: '#60a5fa',
-    eyes:  'default',
-    beak:  'default',
+    eyes:  '1',       // matches Eyes_1.png
+    beak:  '1',       // matches Beak_1.png
     torso: 'default',
-    hair:  'default',
+    hair:  '1',       // matches Hair_1.png
     pantsStyle: 'Shorts'
   },
   stats: { wins: 0, games: 0 }
@@ -108,18 +111,24 @@ function avatarSVG(look) {
   const baseName   = getBaseNameFromColor(look.color);
   const pantsStyle = look.pantsStyle === 'Skirt' ? 'Skirt' : 'Shorts';
 
-  const basePath  = `img/Base_${baseName}.png`;
-  const pantsPath = `img/${pantsStyle}_${baseName}.png`;
-  const beakPath  = `img/Beak_1.png`;
-  const eyesPath  = `img/Eyes_1.png`;
-  const hairPath  = `img/Hair_1.png`;
+  const eyesIdx = look.eyes || '1';
+  const beakIdx = look.beak || '1';
+  const hairIdx = look.hair || '1';
+
+  const basePath   = `img/Base_${baseName}.png`;
+  const pantsPath  = `img/${pantsStyle}_${baseName}.png`;
+  const shoesPath  = `img/Shoes.png`;           // single shoes sprite
+  const beakPath   = `img/Beak_${beakIdx}.png`;
+  const eyesPath   = `img/Eyes_${eyesIdx}.png`;
+  const hairPath   = `img/Hair_${hairIdx}.png`;
 
   const layerStyle = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;';
 
   return `
-    <div class="avatar-sprite" style="position:relative;width:240px;height:270px;">
+    <div class="avatar-sprite">
       <img src="${basePath}"  alt="body"  style="${layerStyle}">
       <img src="${pantsPath}" alt="pants" style="${layerStyle}">
+      <img src="${shoesPath}" alt="shoes" style="${layerStyle}">
       <img src="${beakPath}"  alt="beak"  style="${layerStyle}">
       <img src="${eyesPath}"  alt="eyes"  style="${layerStyle}">
       <img src="${hairPath}"  alt="hair"  style="${layerStyle}">
@@ -151,6 +160,7 @@ function markActive(parent,btn) {
   btn.classList.add('active');
 }
 
+// Color swatches
 COLORS.forEach(c => {
   const sw = el('div',{className:'color-swatch', style:`background:${c}`});
   sw.onclick = () => {
@@ -163,11 +173,27 @@ COLORS.forEach(c => {
   colorRow.append(sw);
 });
 
-EYES .forEach(v => addOption(eyesRow , v, () => { you.look.eyes  = v; }));
-BEAKS.forEach(v => addOption(beakRow , v, () => { you.look.beak  = v; }));
-TORSOS.forEach(v => addOption(torsoRow, v, () => { you.look.torso = v; }));
-HAIRS.forEach(v => addOption(hairRow , v, () => { you.look.hair  = v; }));
+// Eyes 1–4
+EYES.forEach(v =>
+  addOption(eyesRow, `Eyes ${v}`, () => { you.look.eyes = v; })
+);
 
+// Beaks 1–3
+BEAKS.forEach(v =>
+  addOption(beakRow, `Beak ${v}`, () => { you.look.beak = v; })
+);
+
+// Torso placeholder
+TORSOS.forEach(v =>
+  addOption(torsoRow, 'Torso', () => { you.look.torso = v; })
+);
+
+// Hair 1–4
+HAIRS.forEach(v =>
+  addOption(hairRow, `Hair ${v}`, () => { you.look.hair = v; })
+);
+
+// Pants style (Shorts / Skirt)
 PANTS.forEach(style => {
   addOption(pantsRow, style, () => {
     you.look.pantsStyle = style;
@@ -266,7 +292,7 @@ chatForm.addEventListener('submit', e => {
 function pmStart(otherId) { socket.emit('pmStart',{to:otherId}); }
 function openProfile(id)  { socket.emit('profile:get',{id}); }
 
-// Tic-Tac-Toe (client)
+// Tic-Tac-Toe (client stub)
 
 let ttt = { active:false, me:'X', vs:null, board:Array(9).fill(null), turn:'X', room:null };
 
@@ -277,7 +303,7 @@ if (tttBoard && !tttBoard.hasChildNodes()) {
       if (!ttt.active || ttt.turn !== ttt.me || ttt.board[i]) return;
       ttt.board[i] = ttt.me;
       b.innerText = ttt.me;
-      socket.emit('ttt:move',{ room: ttt.room, idx: i, mark: ttt.me });
+      socket.emit('ttt:move',{room:ttt.room, idx:i});
       ttt.turn = (ttt.turn === 'X' ? 'O' : 'X');
       updateTttStatus();
     };
@@ -391,7 +417,6 @@ socket.on('pm:error', e => {
   addLine(`<span class="msg pm" style="color:#ef4444">PM error: ${esc(e)}</span>`);
 });
 
-// TTT events
 socket.on('ttt:start', data => {
   ttt.active = true;
   ttt.room   = data.room;
