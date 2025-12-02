@@ -12,7 +12,15 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "socket.io": "^4.8.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NattyDaniel404/Flock-Club.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NattyDaniel404/Flock-Club/issues"
+  },
+  "homepage": "https://github.com/NattyDaniel404/Flock-Club#readme"
 }
