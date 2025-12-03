@@ -28,7 +28,6 @@ const hairRow  = document.getElementById('hairRow');
 const pantsRow = document.getElementById('pantsRow');
 
 // Avatar / Look State
-
 const COLOR_BASES = {
   '#f9fafb': 'White',
   '#34d399': 'Green',
@@ -38,12 +37,12 @@ const COLOR_BASES = {
 
 const COLORS = Object.keys(COLOR_BASES);
 
-// These now correspond to actual numbered files:
-// Eyes_1.png .. Eyes_4.png, Beak_1.png .. Beak_3.png, Hair_1.png .. Hair_4.png
-const EYES   = ['1', '2', '3', '4'];
-const BEAKS  = ['1', '2', '3'];
-const TORSOS = ['default']; // still not using torso variants yet
-const HAIRS  = ['1', '2', '3', '4'];
+// use numbered variants to match files:
+// Beak_1–3, Eyes_1–4, Hair_1–4
+const EYES   = ['1','2','3','4'];
+const BEAKS  = ['1','2','3'];
+const TORSOS = ['default'];
+const HAIRS  = ['1','2','3','4'];
 const PANTS  = ['Shorts', 'Skirt'];
 
 const you = {
@@ -53,17 +52,16 @@ const you = {
   y: Math.random() * 260 + 260,
   look: {
     color: '#60a5fa',
-    eyes:  '1',       // matches Eyes_1.png
-    beak:  '1',       // matches Beak_1.png
+    eyes:  '1',
+    beak:  '1',
     torso: 'default',
-    hair:  '1',       // matches Hair_1.png
+    hair:  '1',
     pantsStyle: 'Shorts'
   },
   stats: { wins: 0, games: 0 }
 };
 
-// Small helpers
-
+// Helpers
 function el(tag, attrs = {}, children = []) {
   const e = document.createElement(tag);
 
@@ -99,8 +97,7 @@ function addLine(html) {
   feed.scrollTop = feed.scrollHeight;
 }
 
-// PNG-based avatar
-
+// Avatar PNGs
 function getBaseNameFromColor(hex) {
   if (!hex) return 'Blue';
   const h = hex.toLowerCase();
@@ -111,16 +108,12 @@ function avatarSVG(look) {
   const baseName   = getBaseNameFromColor(look.color);
   const pantsStyle = look.pantsStyle === 'Skirt' ? 'Skirt' : 'Shorts';
 
-  const eyesIdx = look.eyes || '1';
-  const beakIdx = look.beak || '1';
-  const hairIdx = look.hair || '1';
-
   const basePath   = `img/Base_${baseName}.png`;
   const pantsPath  = `img/${pantsStyle}_${baseName}.png`;
-  const shoesPath  = `img/Shoes.png`;           // single shoes sprite
-  const beakPath   = `img/Beak_${beakIdx}.png`;
-  const eyesPath   = `img/Eyes_${eyesIdx}.png`;
-  const hairPath   = `img/Hair_${hairIdx}.png`;
+  const beakPath   = `img/Beak_${look.beak}.png`;
+  const eyesPath   = `img/Eyes_${look.eyes}.png`;
+  const hairPath   = `img/Hair_${look.hair}.png`;
+  const shoesPath  = `img/Shoes.png`;
 
   const layerStyle = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;';
 
@@ -142,7 +135,6 @@ function renderPreview() {
 }
 
 // Customizer UI
-
 function addOption(parent,label,fn) {
   const b = el('button',{className:'option', type:'button', innerText:label});
   b.onclick = () => {
@@ -160,7 +152,7 @@ function markActive(parent,btn) {
   btn.classList.add('active');
 }
 
-// Color swatches
+// Colors
 COLORS.forEach(c => {
   const sw = el('div',{className:'color-swatch', style:`background:${c}`});
   sw.onclick = () => {
@@ -173,27 +165,13 @@ COLORS.forEach(c => {
   colorRow.append(sw);
 });
 
-// Eyes 1–4
-EYES.forEach(v =>
-  addOption(eyesRow, `Eyes ${v}`, () => { you.look.eyes = v; })
-);
+// Other options – labels match numbered files
+EYES.forEach(v  => addOption(eyesRow , `Eyes ${v}`, () => { you.look.eyes  = v; }));
+BEAKS.forEach(v => addOption(beakRow , `Beak ${v}`, () => { you.look.beak  = v; }));
+TORSOS.forEach(v => addOption(torsoRow, v,              () => { you.look.torso = v; }));
+HAIRS.forEach(v => addOption(hairRow , `Hair ${v}`, () => { you.look.hair  = v; }));
 
-// Beaks 1–3
-BEAKS.forEach(v =>
-  addOption(beakRow, `Beak ${v}`, () => { you.look.beak = v; })
-);
-
-// Torso placeholder
-TORSOS.forEach(v =>
-  addOption(torsoRow, 'Torso', () => { you.look.torso = v; })
-);
-
-// Hair 1–4
-HAIRS.forEach(v =>
-  addOption(hairRow, `Hair ${v}`, () => { you.look.hair = v; })
-);
-
-// Pants style (Shorts / Skirt)
+// Pants options
 PANTS.forEach(style => {
   addOption(pantsRow, style, () => {
     you.look.pantsStyle = style;
@@ -201,7 +179,6 @@ PANTS.forEach(style => {
 });
 
 // Avatar DOM lifecycle
-
 const avatars = new Map();
 
 function ensureAvatar(u) {
@@ -257,7 +234,6 @@ function btn(label, fn) {
 }
 
 // Movement
-
 roomEl.addEventListener('click', e => {
   const rect = roomEl.getBoundingClientRect();
   you.x = e.clientX - rect.left;
@@ -274,7 +250,6 @@ centerBtn.onclick = () => {
 };
 
 // Chat
-
 chatForm.addEventListener('submit', e => {
   e.preventDefault();
   const t = chatInput.value.trim();
@@ -292,9 +267,15 @@ chatForm.addEventListener('submit', e => {
 function pmStart(otherId) { socket.emit('pmStart',{to:otherId}); }
 function openProfile(id)  { socket.emit('profile:get',{id}); }
 
-// Tic-Tac-Toe (client stub)
-
-let ttt = { active:false, me:'X', vs:null, board:Array(9).fill(null), turn:'X', room:null };
+// Tic-Tac-Toe
+let ttt = {
+  active:false,
+  me:'X',
+  vs:null,
+  board:Array(9).fill(null),
+  turn:'X',
+  room:null
+};
 
 if (tttBoard && !tttBoard.hasChildNodes()) {
   for (let i=0; i<9; i++) {
@@ -311,7 +292,9 @@ if (tttBoard && !tttBoard.hasChildNodes()) {
   }
 }
 
-function tttInvite(otherId) { socket.emit('ttt:invite',{to:otherId}); }
+function tttInvite(otherId) {
+  socket.emit('ttt:invite',{to:otherId});
+}
 
 function updateTttStatus(msg) {
   const el = document.getElementById('tttStatus');
@@ -321,7 +304,9 @@ function updateTttStatus(msg) {
 }
 
 function endTtt() {
-  socket.emit('ttt:end',{room:ttt.room});
+  if (ttt.room) {
+    socket.emit('ttt:end',{room:ttt.room});
+  }
   tttModal.close();
   ttt.active = false;
   ttt.room   = null;
@@ -342,7 +327,6 @@ function checkWin(b) {
 }
 
 // Socket events
-
 socket.on('connect', () => {
   you.id = socket.id;
 
@@ -417,6 +401,7 @@ socket.on('pm:error', e => {
   addLine(`<span class="msg pm" style="color:#ef4444">PM error: ${esc(e)}</span>`);
 });
 
+// Tic-Tac-Toe events from server
 socket.on('ttt:start', data => {
   ttt.active = true;
   ttt.room   = data.room;
@@ -451,7 +436,6 @@ socket.on('ttt:end', (data) => {
 });
 
 // Shared helpers
-
 function showBubble(id, text) {
   const rec = avatars.get(id); if (!rec) return;
   let b = rec.el.querySelector('.bubble');
@@ -468,7 +452,7 @@ function pushLook() {
   socket.emit('look', you.look);
 }
 
-// Character creator show/hide toggle
+// Creator show/hide
 if (creatorSection && toggleCreatorBtn) {
   let creatorVisible = true;
 

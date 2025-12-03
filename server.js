@@ -8,7 +8,7 @@ const io = new Server(server);
 
 app.use(express.static(__dirname));
 
-const users = new Map();   // id -> {id,name,x,y,look}
+const users = new Map();    // id -> {id,name,x,y,look}
 const tttGames = new Map(); // roomId -> { X, O, board }
 
 function safeName(n){
@@ -34,10 +34,8 @@ function tttCheckWin(b) {
 io.on('connection', (socket)=>{
   console.log('Client connected', socket.id);
 
-  // Initial roster to new client
   socket.emit('presence', [...users.values()]);
 
-  // join with avatar data
   socket.on('join', (u)=>{
     const user = {
       id: socket.id,
@@ -52,7 +50,6 @@ io.on('connection', (socket)=>{
     sendPresence();
   });
 
-  // movement
   socket.on('move', ({x,y})=>{
     const u = users.get(socket.id); 
     if(!u) return;
@@ -61,7 +58,6 @@ io.on('connection', (socket)=>{
     io.emit('moved', u);
   });
 
-  // look updates
   socket.on('look', (look)=>{
     const u = users.get(socket.id); 
     if(!u) return;
@@ -69,7 +65,6 @@ io.on('connection', (socket)=>{
     io.emit('look', u);
   });
 
-  // global chat
   socket.on('chat', ({text})=>{
     const u = users.get(socket.id); 
     if(!u || !text) return;
@@ -80,7 +75,6 @@ io.on('connection', (socket)=>{
     });
   });
 
-  // PM (/w @name)
   socket.on('pm', ({toName, text}) => {
     const fromUser = users.get(socket.id);
     if (!fromUser || !text || !toName) return;
@@ -105,11 +99,9 @@ io.on('connection', (socket)=>{
     io.to(target.id).emit('pm', payload);
   });
 
-  socket.on('pmStart', ()=> {
-    // your client calls this but doesn’t need a response yet
-  });
+  socket.on('pmStart', ()=> {});
 
-  // Tic-Tac-Toe: invite
+  // Tic-Tac-Toe invite
   socket.on('ttt:invite', ({ to }) => {
     const other = io.sockets.sockets.get(to);
     if (!other) return;
@@ -142,7 +134,7 @@ io.on('connection', (socket)=>{
     });
   });
 
-  // Tic-Tac-Toe: move
+  // Tic-Tac-Toe move
   socket.on('ttt:move', ({ room, idx }) => {
     const game = tttGames.get(room);
     if (!game) return;
@@ -167,14 +159,13 @@ io.on('connection', (socket)=>{
     }
   });
 
-  // Tic-Tac-Toe: end
+  // Tic-Tac-Toe end
   socket.on('ttt:end', ({ room }) => {
     if (!tttGames.has(room)) return;
     io.to(room).emit('ttt:end', { result: 'abandon' });
     tttGames.delete(room);
   });
 
-  // cleanup
   socket.on('disconnect', ()=>{
     const u = users.get(socket.id);
     if(u){
@@ -183,7 +174,6 @@ io.on('connection', (socket)=>{
       sendPresence();
     }
 
-    // end any games this socket was in
     for (const [room, game] of tttGames) {
       if (game.X === socket.id || game.O === socket.id) {
         io.to(room).emit('ttt:end', { result: 'abandon' });
