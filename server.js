@@ -7,7 +7,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(path.join(__dirname, 'public')));
+// serve everything in /Public
+app.use(express.static(path.join(__dirname, 'Public')));
+
+// explicit route for "/"
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Public', 'index.html'));
+});
+
 
 const users = new Map();    // id -> {id,name,x,y,look}
 const tttGames = new Map(); // roomId -> { X, O, board }
